@@ -17,7 +17,7 @@ class PersonagensController {
     async getPersonagem(request: Request, response: Response): Promise<any> {
         try {
             const db = readDB();
-            const perso: Personagem[] = db.personagens.filter((m: Personagem) => m.id === request.query.id)
+            const perso: Personagem[] = db.personagens.filter((m: Personagem) => m.idMesa === request.query.id && m.idUser === request.query.idUser)
             return response.json(perso);
         } catch (error) {
             return response.status(500);
@@ -29,14 +29,7 @@ class PersonagensController {
             console.log('Chamando', request.query);
             const db = readDB();
 
-            const mesa: Mesa | undefined = db.mesas.find((m: Mesa) => m.id === request.query.mesaId);
-    
-            if (!mesa) {
-                return response.status(404).json({ error: 'Mesa não encontrada' });
-            }
-
-            const personagem = {};
-            // const personagem = mesa.personagens.find((p: Personagem) => p.id === request.query.id);
+            const personagem: Personagem | undefined = db.personagem.find((m: Personagem) => m.idMesa === request.query.mesaId && m.idUser === request.query.idUser);
     
             if (!personagem) {
                 return response.status(404).json({ error: 'Personagem não encontrado' });
@@ -52,17 +45,14 @@ class PersonagensController {
 
     async newPersonagem(request: Request, response: Response) {
         try {
-            const auxiliar = request.body;
+            const auxiliar: Personagem = request.body;
             const db = readDB();
-            const newId = uuidv5(auxiliar.personagem.nome, uuidv5.URL);
+            const newId = uuidv5(auxiliar.nome, uuidv5.URL);
             const personagem: Personagem = {
-                ...request.body.personagem,
+                ...request.body,
                 id: newId
             }
-
-            const mesa: Mesa = db.mesas.filter((m: Mesa) => m.id === request.body.id)[0];
-
-            // mesa.personagens.push(personagem);
+            db.personagens.push(personagem)
             writeFileSync(dbFilename, JSON5.stringify(db, null, 2));
             response.json(personagem);
 
@@ -75,20 +65,20 @@ class PersonagensController {
         try {
             const db = readDB();
             const personagem: Personagem = {
-                ...request.body.personagem 
+                ...request.body 
             }
-            const indexMesa = db.mesa.findIndex((m: Mesa) => m.id === request.body.id);
 
-            const indexPersonagem = db.mesa[indexMesa].personagens.findIndex((p: Personagem) => p.id === personagem.id);
-
-            db.mesa[indexMesa].personagens[indexPersonagem] = {
-                ...db.mesa[indexMesa].personagens[indexPersonagem],
+            const index = db.personagens.findIndex((p: Personagem) => p.id === personagem.id && p.idUser === request.body.idUser);
+            db.personagens[index] = {
+                ...db.personagens[index],
                 nome: personagem.nome,
                 tipo: personagem.tipo,
                 ficha: personagem.ficha,
                 status: personagem.status,
                 statusAtuais: personagem.statusAtuais,
-            }
+
+            };
+
             writeFileSync(dbFilename, JSON5.stringify(db, null, 2));
             response.json(personagem);
 
@@ -100,58 +90,14 @@ class PersonagensController {
     async deletePersonagem(request: Request, response: Response) {
         try {
             const db = readDB();
-            const personagem: Personagem = request.body.personagem
-            const index = db.mesas.findIndex((m: Mesa) => m.id === request.query.id);
-            const indexPersonagem = db.mesa[index].personagens.findIndex((p: Personagem) => p.id === personagem.id);
-            db.mesa[index].personagens.splice(indexPersonagem, 1);
+            const index = db.personagens.findIndex((p: Personagem) => p.id === request.query.id);
+            db.personagens.splice(index, 1);
             writeFileSync(dbFilename, JSON5.stringify(db, null, 2));
             response.status(200);
         } catch (error) {
             response.status(500);
         }
     }
-
-    async abrirFichaPersonagem(request: Request, response: Response) {
-        console.log('me chamooouu')
-        try {
-            const db = readDB(); // Sua função de leitura de DB
-            const idMesa = request.query.id;
-            const idPersonagem = request.query.idPersonagem;
-    
-            const mesa = db.mesas.find((m: Mesa) => m.id === idMesa);
-            if (!mesa) {
-                return response.status(404).send('Mesa não encontrada');
-            }
-    
-            const personagem = mesa.personagens.find((p: Personagem) => p.id === idPersonagem);
-            if (!personagem || !personagem.ficha) {
-                return response.status(404).send('Ficha do personagem não encontrada');
-            }
-    
-            // Ajuste o diretório base para o diretório onde os PDFs devem ser localizados
-            const baseDir = 'D:/RPG';
-            const caminhoFicha = decodeURIComponent(personagem.ficha.replace('file:///', ''));
-    
-            // Verifica se o arquivo solicitado está dentro do diretório permitido
-            if (!caminhoFicha.startsWith(baseDir)) {
-                return response.status(403).send('Acesso negado');
-            }
-    
-            console.log('caminho act', caminhoFicha);
-            const caminhoAbsoluto = resolve(caminhoFicha);
-            console.log('caminho abs', caminhoAbsoluto);
-            exists(caminhoAbsoluto, (exists) => {
-                if (exists) {
-                    response.sendFile(caminhoAbsoluto);
-                } else {
-                    response.status(404).send('Ficha não encontrada');
-                }
-            });
-        } catch (error) {
-            console.error(error);
-            response.status(500).send('Erro ao abrir ficha do personagem');
-        }
-    }    
 
 }
 

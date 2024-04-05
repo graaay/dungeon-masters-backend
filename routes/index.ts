@@ -31,7 +31,6 @@ routes.put('/mesas', mesas.updateMesas);
 const personagens = new PersonagensController();
 
 routes.get('/personagens', personagens.getPersonagem);
-routes.get('/personagens/ficha', personagens.abrirFichaPersonagem);
 routes.get('/personagens/by-id', personagens.getPersonagemById);
 routes.post('/personagens', personagens.newPersonagem);
 routes.put('/personagens', personagens.updatePersonagem);
