@@ -15,7 +15,8 @@ class MesasController {
     async getMesas(request: Request, response: Response): Promise<any> {
         try {
             const db = readDB();
-            return response.json(db.mesas)
+            const mesas = db.mesas.filter((m: Mesa) => m.idUser === request.query.idUser)
+            return response.json(mesas)
         } catch (error) {
             return response.status(500);
         }
@@ -24,8 +25,7 @@ class MesasController {
     async getByIdMesas(request: Request, response: Response): Promise<any> {
         try {
             const db = readDB();
-            console.log(request.query)
-            const mesa = db.mesas.filter((m: Mesa) => m.id === request.query.id)
+            const mesa = db.mesas.filter((m: Mesa) => m.id === request.query.id && m.idUser === request.query.idUser)
             return response.json(mesa)
         } catch (error) {
             return response.status(500);
@@ -37,6 +37,7 @@ class MesasController {
             const db = readDB();
             const mesa: Mesa = {
                 id: uuidv5(request.body.nome, uuidv5.URL),
+                idUser: request.body.idUser,
                 ...request.body ,
                 personagens: [],
             }
@@ -54,7 +55,7 @@ class MesasController {
             const mesa: Mesa = {
                 ...request.body 
             }
-            const index = db.mesas.findIndex((m: Mesa) => m.id === mesa.id);
+            const index = db.mesas.findIndex((m: Mesa) => m.id === mesa.id && m.idUser === request.query.idUser);
             db.mesas[index] = {
                 ...db.mesas[index],
                 nome: mesa.nome,
@@ -73,7 +74,7 @@ class MesasController {
     async deleteMesas(request: Request, response: Response) {
         try {
             const db = readDB();
-            const index = db.mesas.findIndex((m: Mesa) => m.id === request.query.id);
+            const index = db.mesas.findIndex((m: Mesa) => m.id === request.query.id && m.idUser === request.query.idUser);
             db.mesas.splice(index, 1);
             writeFileSync(dbFilename, JSON5.stringify(db, null, 2));
             response.status(200);

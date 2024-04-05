@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import { v5 as uuidv5 } from 'uuid';
 import JSON5 from 'json5';
 import { readFileSync, writeFileSync } from 'fs';
-import { Usuario } from './interfaces'
+import { Usuario } from './interfaces';
+import { AuthenticateService } from '../app/services/token'
 
 const dbFilename = 'db.json5';
 const readDB = () => {
@@ -15,13 +16,25 @@ class UsuarioController {
     async authEmail(request: Request, response: Response) {
         try {
             const db = readDB();
-            const {email, socialId} = request.body;
-            const user = db.usuarios.filter((u: Usuario) => u.email === email && u.socialId === socialId);
-            return response.json(user);
+            const service = new AuthenticateService();
+            const { email, socialId } = request.body;
+
+            const user = db.usuarios.find((u: Usuario) => u.email === email && u.socialId === socialId);
+
+            if (!user) {
+                return response.status(404).json({ message: "Usuário não encontrado." });
+            }
+
+            const token = await service.generateToken(user.id!);
+            const respostaFull = { ...user, token };
+
+            return response.json(respostaFull);
         } catch (error) {
-            return response.status(500);
+            console.error(error); // Log de erro melhorado
+            return response.status(500).json({ message: "Ocorreu um erro no servidor." });
         }
     }
+    
 
     async register(request: Request, response: Response) {
         try {

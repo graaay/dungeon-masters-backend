@@ -1,6 +1,6 @@
 interface Mesa {
     id: string;
-    idUsuario: string;
+    idUser: string;
     nome: string;
     sistema: string;
     mesaAtiva: boolean;
@@ -19,6 +19,7 @@ interface Status {
 
 interface Personagem {
     id: string;
+    idUser: string;
     idMesa: string;
     nome: string;
     tipo: string;

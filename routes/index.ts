@@ -1,3 +1,4 @@
+import { validateAuthentication } from '../app/middleware/validateAuthentication';
 import { Router } from "express";
 import { MesasController } from "../modules/mesas"
 import { PersonagensController } from "../modules/personagens"
@@ -11,6 +12,10 @@ const user = new UsuarioController();
 
 routes.post('/user/social-login', user.authEmail);
 routes.post('/user/register', user.register);
+
+// Adição de middleware
+
+routes.use(validateAuthentication);
 
 // Mesas routes
 
