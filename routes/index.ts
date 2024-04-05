@@ -1,8 +1,16 @@
 import { Router } from "express";
 import { MesasController } from "../modules/mesas"
 import { PersonagensController } from "../modules/personagens"
+import { UsuarioController } from "../modules/usuarios"
 
 const routes = Router();
+
+// Usuario routes
+
+const user = new UsuarioController(); 
+
+routes.post('/user/social-login', user.authEmail);
+routes.post('/user/register', user.register);
 
 // Mesas routes
 

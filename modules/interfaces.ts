@@ -1,10 +1,11 @@
 interface Mesa {
     id: string;
+    idUsuario: string;
     nome: string;
     sistema: string;
     mesaAtiva: boolean;
     nivel?: number;
-    personagens: Array<Personagem>;
+    personagens?: Array<Personagem>;
 }
 
 interface Status {
@@ -18,6 +19,7 @@ interface Status {
 
 interface Personagem {
     id: string;
+    idMesa: string;
     nome: string;
     tipo: string;
     ficha?: string;
@@ -25,4 +27,13 @@ interface Personagem {
     statusAtuais?: Status;
 }
 
-export { Personagem, Mesa }
+interface Usuario {
+    id?: string;
+    name: string;
+    email: string;
+    password?: string;
+    token?: string;
+    socialId?: string;
+}
+
+export { Personagem, Mesa, Usuario }

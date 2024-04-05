@@ -17,8 +17,8 @@ class PersonagensController {
     async getPersonagem(request: Request, response: Response): Promise<any> {
         try {
             const db = readDB();
-            const mesa: Mesa = db.mesas.filter((m: Mesa) => m.id === request.query.id)
-            return response.json(mesa.personagens);
+            const perso: Personagem[] = db.personagens.filter((m: Personagem) => m.id === request.query.id)
+            return response.json(perso);
         } catch (error) {
             return response.status(500);
         }
@@ -26,29 +26,43 @@ class PersonagensController {
 
     async getPersonagemById(request: Request, response: Response): Promise<any> {
         try {
+            console.log('Chamando', request.query);
             const db = readDB();
-            const mesa: Mesa = db.mesas.filter((m: Personagem) => m.id === request.query.id);
-            const personagem = mesa.personagens.filter((p: Personagem) => p.id === request.query.idPersonagem);
+
+            const mesa: Mesa | undefined = db.mesas.find((m: Mesa) => m.id === request.query.mesaId);
+    
+            if (!mesa) {
+                return response.status(404).json({ error: 'Mesa não encontrada' });
+            }
+
+            const personagem = {};
+            // const personagem = mesa.personagens.find((p: Personagem) => p.id === request.query.id);
+    
+            if (!personagem) {
+                return response.status(404).json({ error: 'Personagem não encontrado' });
+            }
+    
             return response.json(personagem);
         } catch (error) {
-            return response.status(500);
+            console.error(error);
+            return response.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
+    
 
     async newPersonagem(request: Request, response: Response) {
         try {
             const auxiliar = request.body;
             const db = readDB();
             const newId = uuidv5(auxiliar.personagem.nome, uuidv5.URL);
-            console.log(request.body.personagem);
-            console.log(newId);
             const personagem: Personagem = {
                 ...request.body.personagem,
                 id: newId
             }
 
             const mesa: Mesa = db.mesas.filter((m: Mesa) => m.id === request.body.id)[0];
-            mesa.personagens.push(personagem);
+
+            // mesa.personagens.push(personagem);
             writeFileSync(dbFilename, JSON5.stringify(db, null, 2));
             response.json(personagem);
 
