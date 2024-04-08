@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 import { v5 as uuidv5 } from 'uuid';
 import JSON5 from 'json5';
 import { readFileSync, writeFileSync, readFile, exists } from 'fs';
-import { Personagem, Mesa } from './interfaces'
-import { join, resolve } from 'path';
+import { Personagem } from './interfaces'
 
 const dbFilename = 'db.json5';
 const readDB = () => {

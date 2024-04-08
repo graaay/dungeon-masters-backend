@@ -11,6 +11,7 @@ const routes = Router();
 const user = new UsuarioController(); 
 
 routes.post('/user/social-login', user.authEmail);
+routes.post('/user/signed', user.validateAuth);
 routes.post('/user/register', user.register);
 
 // Adição de middleware
